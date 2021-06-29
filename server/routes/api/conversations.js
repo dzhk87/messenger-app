@@ -80,7 +80,7 @@ router.get("/", async (req, res, next) => {
 });
 
 // updates readAt when messages are read
-router.post("/:conversationId/read", async (req, res, next) => {
+router.patch("/:conversationId/read", async (req, res, next) => {
   try {
     if (!req.user) {
       return res.sendStatus(401);

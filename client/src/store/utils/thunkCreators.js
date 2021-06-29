@@ -113,7 +113,7 @@ export const searchUsers = (searchTerm) => async (dispatch) => {
 
 export const readMessages = (conversationId) => async (dispatch) => {
   try {
-    const { data } = await axios.post(
+    const { data } = await axios.patch(
       `/api/conversations/${conversationId}/read`,
       {
         readAt: new Date(),
