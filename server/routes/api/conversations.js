@@ -83,4 +83,47 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// updates readAt when messages are read
+router.patch("/:conversationId/read", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+    const userId = req.user.id;
+    const { conversationId } = req.params;
+    const conversation = await Conversation.findByPk(conversationId, {
+      attributes: ["id", "user1Id", "user2Id"],
+      order: [[Message, "createdAt", "DESC"]],
+      include: [{ model: Message, order: ["createdAt", "DESC"] }],
+    });
+    // check if user is in the conversation
+    const { user1Id, user2Id } = conversation;
+    if (userId !== user1Id && userId !== user2Id) {
+      return res.sendStatus(403);
+    }
+    // get unread messages
+    const otherUserId = userId === user1Id ? user2Id : user1Id;
+    const unreadMessages = await Message.findAll({
+      where: {
+        conversationId,
+        senderId: otherUserId,
+        readAt: null,
+      },
+    });
+    // update readAt
+    const { readAt } = req.body;
+    const messageUpdates = unreadMessages.map((message) => {
+      message.readAt = readAt;
+      return message.save();
+    });
+    const updatedMessages = await Promise.all(messageUpdates);
+    const updatedMessageIds = updatedMessages.map(({ id }) => id);
+
+    // return updated messages
+    res.json({ messageIds: updatedMessageIds, readAt });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
