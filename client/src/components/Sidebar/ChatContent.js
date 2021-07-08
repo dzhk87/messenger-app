@@ -38,7 +38,10 @@ const ChatContent = (props) => {
   const classes = useStyles();
 
   const { conversation } = props;
-  const { latestMessageText, otherUser } = conversation;
+  const { latestMessageText, otherUser, messages } = conversation;
+  const unreadMessagesCount = messages.filter(
+    ({ senderId, readAt }) => senderId === otherUser.id && !readAt
+  ).length;
 
   return (
     <Box className={classes.root}>
@@ -50,6 +53,11 @@ const ChatContent = (props) => {
           {latestMessageText}
         </Typography>
       </Box>
+      {unreadMessagesCount > 0 && (
+        <Box>
+          <Box className={classes.notification}>{unreadMessagesCount}</Box>
+        </Box>
+      )}
     </Box>
   );
 };
