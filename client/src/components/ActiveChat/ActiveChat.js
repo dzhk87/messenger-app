@@ -12,6 +12,7 @@ const useStyles = makeStyles(() => ({
     flexDirection: "column",
   },
   chatContainer: {
+    height: "calc(100vh - 123px)",
     marginLeft: 41,
     marginRight: 41,
     display: "flex",
