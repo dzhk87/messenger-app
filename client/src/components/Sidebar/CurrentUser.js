@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Typography, Menu, MenuItem, IconButton } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { BadgeAvatar } from "./index";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
 import { logout } from "../../store/utils/thunkCreators";
@@ -34,12 +34,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const CurrentUser = (props) => {
+const CurrentUser = () => {
+  const user = useSelector((state) => state.user);
+  const dispatch = useDispatch();
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-
-  const user = props.user || {};
 
   const handleClick = (e) => {
     setAnchorEl(e.currentTarget);
@@ -49,8 +49,9 @@ const CurrentUser = (props) => {
     setAnchorEl(null);
   };
 
-  const handleLogout = async () => {
-    await props.logout(user.id);
+  const handleLogout = () => {
+    dispatch(logout(user.id));
+    dispatch(clearOnLogout());
   };
 
   return (
@@ -84,27 +85,9 @@ const CurrentUser = (props) => {
         >
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
-        {/* <Button className={classes.logout} onClick={handleLogout}>
-          Logout
-        </Button> */}
       </Box>
     </Box>
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.user,
-  };
-};
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    logout: (id) => {
-      dispatch(logout(id));
-      dispatch(clearOnLogout());
-    },
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CurrentUser);
+export default CurrentUser;

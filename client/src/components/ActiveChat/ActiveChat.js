@@ -31,7 +31,7 @@ const ActiveChat = (props) => {
     if (conversation.id) {
       readMessages(conversation.id);
     }
-  }, [conversation.id]);
+  }, [conversation.id, readMessages]);
 
   return (
     <Box className={classes.root}>

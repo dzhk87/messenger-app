@@ -9,16 +9,18 @@ import {
   FormControl,
   TextField,
   FormHelperText,
+  useTheme,
 } from "@material-ui/core";
 import { register } from "./store/utils/thunkCreators";
 import Intro from "./Intro";
+import Header from "./Header";
 import { useMainPageStyles } from "./hooks";
 
-const Signup = (props) => {
-  const history = useHistory();
-  const { user, register } = props;
+const Signup = ({ user, register }) => {
   const [formErrorMessage, setFormErrorMessage] = useState({});
-  const classes = useMainPageStyles();
+  const history = useHistory();
+  const theme = useTheme();
+  const classes = useMainPageStyles(theme);
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -50,23 +52,11 @@ const Signup = (props) => {
         direction="column"
         alignItems="center"
       >
-        <Grid
-          container
-          item
-          justify="flex-end"
-          alignItems="center"
-          className={classes.headerDiv}
-        >
-          <Typography className={classes.headerText}>
-            Already have an account?
-          </Typography>
-          <Button
-            className={classes.headerButton}
-            onClick={() => history.push("/login")}
-          >
-            Login
-          </Button>
-        </Grid>
+        <Header
+          headerText={"Already have an account?"}
+          buttonLabel={"Login"}
+          onButtonClick={() => history.push("/login")}
+        />
         <Grid container item justify="center">
           <Box width="100%" padding="10% 15%">
             <form onSubmit={handleRegister} className={classes.form}>

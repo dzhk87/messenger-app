@@ -8,15 +8,17 @@ import {
   Button,
   FormControl,
   TextField,
+  useTheme,
 } from "@material-ui/core";
 import Intro from "./Intro";
 import { login } from "./store/utils/thunkCreators";
 import { useMainPageStyles } from "./hooks";
+import Header from "./Header";
 
-const Login = (props) => {
+const Login = ({ user, login }) => {
   const history = useHistory();
-  const { user, login } = props;
-  const classes = useMainPageStyles();
+  const theme = useTheme();
+  const classes = useMainPageStyles(theme);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -41,23 +43,11 @@ const Login = (props) => {
         direction="column"
         alignItems="center"
       >
-        <Grid
-          container
-          item
-          justify="flex-end"
-          alignItems="center"
-          className={classes.headerDiv}
-        >
-          <Typography className={classes.headerText}>
-            Don't have an account?
-          </Typography>
-          <Button
-            className={classes.headerButton}
-            onClick={() => history.push("/register")}
-          >
-            Register
-          </Button>
-        </Grid>
+        <Header
+          headerText={"Don't have an account?"}
+          buttonLabel={"Register"}
+          onButtonClick={() => history.push("/register")}
+        />
         <Grid container item justify="center">
           <Box width="100%" padding="10% 15%">
             <form onSubmit={handleLogin} className={classes.form}>
@@ -78,7 +68,7 @@ const Login = (props) => {
               </Grid>
               <FormControl className={classes.formControl} required>
                 <TextField
-                  label="password"
+                  label="Password"
                   aria-label="password"
                   type="password"
                   name="password"

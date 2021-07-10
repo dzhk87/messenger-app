@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { SenderBubble, OtherUserBubble } from "../ActiveChat";
@@ -13,10 +13,11 @@ const useStyles = makeStyles(() => ({
 const Messages = (props) => {
   const { messages, otherUser, userId } = props;
   const classes = useStyles();
+  const messageRef = useRef(null);
 
   useEffect(() => {
-    const elem = document.getElementById("messages");
-    const messageElems = elem.childNodes;
+    const elem = messageRef.current;
+    const messageElems = elem?.childNodes || [];
     const lastElem = messageElems[messageElems.length - 1];
     if (lastElem) {
       lastElem.scrollIntoView(false);
@@ -24,7 +25,7 @@ const Messages = (props) => {
   }, [messages.length]);
 
   return (
-    <Box id="messages" className={classes.root}>
+    <Box ref={messageRef} className={classes.root}>
       {messages.map((message) => {
         const time = moment(message.createdAt).format("h:mm");
 
