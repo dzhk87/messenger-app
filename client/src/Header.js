@@ -8,7 +8,6 @@ const Header = ({ headerText, buttonLabel, onButtonClick }) => {
   return (
     <Grid
       container
-      item
       justify="flex-end"
       alignItems="center"
       className={classes.headerDiv}

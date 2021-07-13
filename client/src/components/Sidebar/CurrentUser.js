@@ -29,7 +29,6 @@ const useStyles = makeStyles(() => ({
   },
   ellipsis: {
     color: "#95A7C4",
-    // marginRight: 24,
     opacity: 0.5,
   },
 }));
