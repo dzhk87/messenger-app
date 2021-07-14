@@ -12,6 +12,7 @@ const useStyles = makeStyles(() => ({
     flexDirection: "column",
   },
   chatContainer: {
+    height: "calc(100vh - 123px)",
     marginLeft: 41,
     marginRight: 41,
     display: "flex",
@@ -30,7 +31,7 @@ const ActiveChat = (props) => {
     if (conversation.id) {
       readMessages(conversation.id);
     }
-  }, [conversation.id]);
+  }, [conversation.id, readMessages]);
 
   return (
     <Box className={classes.root}>

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
-import { Grid, CssBaseline, Button } from "@material-ui/core";
+import { Grid, CssBaseline } from "@material-ui/core";
 import { SidebarContainer } from "./Sidebar";
 import { ActiveChat } from "./ActiveChat";
 import { logout, fetchConversations } from "../store/utils/thunkCreators";
@@ -10,7 +10,7 @@ import { clearOnLogout } from "../store/index";
 
 const styles = {
   root: {
-    height: "97vh",
+    height: "100vh",
   },
 };
 
@@ -47,10 +47,6 @@ class Home extends Component {
     }
     return (
       <>
-        {/* logout button will eventually be in a dropdown next to username */}
-        <Button className={classes.logout} onClick={this.handleLogout}>
-          Logout
-        </Button>
         <Grid container component="main" className={classes.root}>
           <CssBaseline />
           <SidebarContainer />
