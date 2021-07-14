@@ -6,9 +6,16 @@ import {
   addOnlineUser,
 } from "./store/conversations";
 
-const socket = io(window.location.origin);
+const socket = io(window.location.origin, {
+  auth: {
+    token: "",
+  },
+});
 
 socket.on("connect", () => {
+  socket.on("exception", ({ errorCode, errorMessage }) => {
+    throw Error(`${errorCode} ${errorMessage}`);
+  });
   console.log("connected to server");
 
   socket.on("add-online-user", (id) => {

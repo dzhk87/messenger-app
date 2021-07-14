@@ -10,6 +10,8 @@ require("dotenv").config();
 const { app, sessionStore } = require("../app");
 const http = require("http");
 const db = require("../db");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie");
 const onlineUsers = require("../constants/onlineUsers");
 const socketMap = require("../constants/socketMap");
 
@@ -33,11 +35,21 @@ const server = http.createServer(app);
 const io = require("socket.io")(server);
 
 io.on("connection", (socket) => {
-  socket.join("online-users");
+  const cookie = socket.handshake.headers.cookie || "";
+
+  if (cookie) {
+    const cookies = cookieParser.parse(cookie);
+    const token = cookies["messenger-token"];
+    jwt.verify(token, process.env.SESSION_SECRET, (err) => {
+      if (!err) {
+        socket.join("online-users");
+      }
+    });
+  }
 
   socket.on("go-online", (id) => {
-    if (!onlineUsers.includes(id)) {
-      onlineUsers.push(id);
+    if (!onlineUsers.hasOwnProperty(id)) {
+      onlineUsers[id] = socket.id;
       socketMap[socket.id] = id;
     }
     // send the user who just went online to everyone else who is already online
@@ -45,14 +57,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on("new-message", ({ message, sender, recipientId }) => {
-    for (const [socketId, userId] of socketMap) {
-      // when online, notifies the recipient only
-      if (recipientId === userId) {
-        socket.to(socketId).emit("new-message", {
-          message,
-          sender,
-        });
-      }
+    if (onlineUsers.hasOwnProperty(recipientId)) {
+      const socketId = onlineUsers[recipientId];
+      socket.to(socketId).emit("new-message", {
+        message,
+        sender,
+      });
     }
   });
 
@@ -75,10 +85,9 @@ sessionStore
 function removeOnlineUser(socket) {
   const socketId = socket.id;
   const id = socketMap[socketId];
-  if (onlineUsers.includes(id)) {
+  if (onlineUsers.hasOwnProperty(id)) {
     socket.to("online-users").emit("remove-offline-user", id);
-    userIndex = onlineUsers.indexOf(id);
-    onlineUsers.splice(userIndex, 1);
+    delete onlineUsers[id];
     delete socketMap[socketId];
     socket.leave("online-users");
   }
