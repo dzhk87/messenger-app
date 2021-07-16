@@ -10,7 +10,10 @@ require("dotenv").config();
 const { app, sessionStore } = require("../app");
 const http = require("http");
 const db = require("../db");
-const onlineUsers = require("../onlineUsers");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie");
+const onlineUsers = require("../constants/onlineUsers");
+const socketMap = require("../constants/socketMap");
 
 /**
  * Get port from environment and store in Express.
@@ -32,28 +35,39 @@ const server = http.createServer(app);
 const io = require("socket.io")(server);
 
 io.on("connection", (socket) => {
+  const cookie = socket.handshake.headers.cookie || "";
+
+  if (cookie) {
+    const cookies = cookieParser.parse(cookie);
+    const token = cookies["messenger-token"];
+    jwt.verify(token, process.env.SESSION_SECRET, (err) => {
+      if (!err) {
+        socket.join("online-users");
+      }
+    });
+  }
+
   socket.on("go-online", (id) => {
-    if (!onlineUsers.includes(id)) {
-      onlineUsers.push(id);
+    if (!onlineUsers.hasOwnProperty(id)) {
+      onlineUsers[id] = socket.id;
+      socketMap[socket.id] = id;
     }
     // send the user who just went online to everyone else who is already online
-    socket.broadcast.emit("add-online-user", id);
+    socket.to("online-users").emit("add-online-user", id);
   });
 
-  socket.on("new-message", (data) => {
-    socket.broadcast.emit("new-message", {
-      message: data.message,
-      sender: data.sender,
-    });
-  });
-
-  socket.on("logout", (id) => {
-    if (onlineUsers.includes(id)) {
-      userIndex = onlineUsers.indexOf(id);
-      onlineUsers.splice(userIndex, 1);
-      socket.broadcast.emit("remove-offline-user", id);
+  socket.on("new-message", ({ message, sender, recipientId }) => {
+    if (onlineUsers.hasOwnProperty(recipientId)) {
+      const socketId = onlineUsers[recipientId];
+      socket.to(socketId).emit("new-message", {
+        message,
+        sender,
+      });
     }
   });
+
+  socket.on("logout", () => removeOnlineUser(socket));
+  socket.on("disconnect", () => removeOnlineUser(socket));
 });
 
 sessionStore
@@ -64,6 +78,20 @@ sessionStore
     server.on("error", onError);
     server.on("listening", onListening);
   });
+
+/**
+ * Performs user clean-up on logout/exit
+ */
+function removeOnlineUser(socket) {
+  const socketId = socket.id;
+  const id = socketMap[socketId];
+  if (onlineUsers.hasOwnProperty(id)) {
+    socket.to("online-users").emit("remove-offline-user", id);
+    delete onlineUsers[id];
+    delete socketMap[socketId];
+    socket.leave("online-users");
+  }
+}
 
 /**
  * Normalize a port into a number, string, or false.
